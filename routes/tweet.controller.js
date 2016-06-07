@@ -18,9 +18,14 @@ exports.start = function(req, res) {
 	Dataset.findById(req.params.id)
 	.populate('keywords')
 	.exec(function(err, ds) {
-		console.log(ds);
+		// Set up variables
 		currentDS = ds;
 		currentKWs = ds.keywords;
+		for(var i=0; i<currentKWs.length; i++) {
+			tweets.push([]);
+		}
+
+		// Start Stream
 		stream = KEYS.stream('statuses/filter', { track: ds.keyText });
 		stream.on('tweet', function(tweet) {
 			ptweet = processTweet(tweet.text);
@@ -28,13 +33,18 @@ exports.start = function(req, res) {
 			logTweet(tweet, ptweet);
 			//saveTweet(tweet, ptweet);
 		});
+
 		res.json({msg: 'started'});
 	});
 };
 
 exports.stop = function(req, res) {
 	stream.stop();
-	saveTweetsArr();
+	//console.log(tweets);
+	//console.log(words);
+	for(var i=0; i<currentKWs.length; i++) {
+		saveTweetsArr(i);
+	}
 	saveWordsArr();
 	res.json({msg: 'stopped'});
 };
@@ -117,55 +127,96 @@ function scrapeTweet(tweet) {
   return data;
 }
 
-function logTweet(tweet, ptweet) {
-	tweets.push(tweet);
-
-	//log ptweets
-	for(var i=0; i<ptweet.length; i++) {
-		var obj = {
-			text: ptweet[i],
-			keys: [{
-				keyword: currentKW,
-				occ: [{
-					sidewords: [ptweet[i-1], ptweet[i+1]],
-					time: tweet.timestamp_ms
-				}]
-			}]
-		};
-		var found = false;
-		for(var j=0; j<words.length; j++) {
-			if(ptweet[i].toLowerCase() === words[j].text.toLowerCase()) {
-				// If found, push to that word
-				// Needs to be altered for multiple keys in Word Model
-				words[j].keys[0].occ.push(obj.keys[0].occ[0]);
-				found = true;
-				break;
-			}
+function scanTweetForKey(tweet) {
+	var arr = [];
+	for(var i=0; i<currentKWs.length; i++) {
+		if(tweet.text.toLowerCase().indexOf(currentKWs[i].keyText.toLowerCase()) != -1) {
+			arr.push(i);
 		}
-		if(found) {
-			found = false;
-		}else {
-			words.push(obj);
+	}
+	return arr;
+}
+
+// This really needs some work....Looks terrible and is unreadable
+function logTweet(tweet, ptweet) {
+	var index = scanTweetForKey(tweet);
+	if(index.length != 0) {
+		for(var q=0; q<index.length; q++) {
+			tweets[index[q]].push(tweet);
+
+			//log ptweets
+			for(var i=0; i<ptweet.length; i++) {
+				var obj = {
+					text: ptweet[i],
+					keys: [{
+						keyword: currentKWs[index[q]],
+						occ: [{
+							sidewords: [ptweet[i-1], ptweet[i+1]],
+							time: tweet.timestamp_ms
+						}]
+					}]
+				};
+				var found = false;
+				for(var j=0; j<words.length; j++) {
+					if(ptweet[i].toLowerCase() === words[j].text.toLowerCase()) {
+						// If word exists, check for key existence
+						var keyFound = false;
+						for(var k=0; k<words[j].keys.length; k++) {
+							// If the keyword in obj already exists in the words obj:
+							if(words[j].keys[k].keyword._id === obj.keys[0].keyword._id) {
+								words[j].keys[k].occ.push(obj.keys[0].occ[0]);
+								keyFound = true;
+								break;
+							}
+						}
+						if(keyFound) {
+							keyFound = false;
+						}else {
+							words[j].keys.push(obj.keys[0]);
+						}
+						found = true;
+						break;
+					}
+				}
+				if(found) {
+					found = false;
+				}else {
+					words.push(obj);
+				}
+			}
 		}
 	}
 }
 
-function saveTweetsArr() {
-	Tweet.create(tweets, function(err, savedTweets) {
-		// Add new tweets to the dataset
-		currentDS.tweets = savedTweets;
-		currentDS.save();
-
-		// Add to keyword, eventually needs to do a check to see which keyword it applies to.
-		currentKW.tweets = savedTweets;
-		currentKW.save();
+function saveTweetsArr(index) {
+	Tweet.create(tweets[index], function(err, savedTweets) {
+		console.log(savedTweets.length);
+		console.log('index' + index);
+		// Add new tweets to the dataset and respective Keyword
+		for(var i=0; i<savedTweets.length; i++) {
+			currentDS.tweets.push(savedTweets[i]);
+			currentKWs[index].tweets.push(savedTweets[i]);
+		}
+		//currentDS.save();
+		currentKWs[index].save();
 	});
 }
 
 function saveWordsArr() {
 	Word.create(words, function(err, savedWords) {
-		currentKW.words = savedWords;
-		currentKW.save();
+		for(var i=0; i<savedWords.length; i++) {
+			for(var j=0; j<savedWords[i].keys.length; j++) {
+				for(var k=0; k<currentKWs.length; k++) {
+					if(currentKWs[k]._id === savedWords[i].keys[j].keyword._id) {
+						currentKWs[k].words.push(savedWords[i]);
+					}
+				}
+			}
+		}
+
+		for(var i=0; i<currentKWs.length; i++) {
+			currentKWs[i].save();
+		}
 	});
 }
 

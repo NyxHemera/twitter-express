@@ -4,10 +4,8 @@ var ObjectId = mongoose.Schema.Types.ObjectId;
 var DatasetSchema = new mongoose.Schema({
 	keywords: [{ type: ObjectId, ref: 'Keyword' }],
 	keyText: String,
-	dStart: Date,
-	dEnd: Date,
-	timeOpen: Number,
-	tweets: [{ type: ObjectId, ref: 'Tweet' }]
+	running: Boolean,
+	hasRun: Boolean
 });
 
 module.exports = mongoose.model('Dataset', DatasetSchema);

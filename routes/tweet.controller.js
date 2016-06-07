@@ -24,7 +24,8 @@ exports.start = function(req, res) {
 		for(var i=0; i<currentKWs.length; i++) {
 			tweets.push([]);
 		}
-
+		currentDS.running = true;
+		currentDS.save();
 		// Start Stream
 		stream = KEYS.stream('statuses/filter', { track: ds.keyText });
 		stream.on('tweet', function(tweet) {
@@ -40,13 +41,16 @@ exports.start = function(req, res) {
 
 exports.stop = function(req, res) {
 	stream.stop();
-	//console.log(tweets);
-	//console.log(words);
-	for(var i=0; i<currentKWs.length; i++) {
-		saveTweetsArr(i);
-	}
-	saveWordsArr();
-	res.json({msg: 'stopped'});
+	currentDS.running = false;
+	currentDS.hasRun = true;
+	currentDS.save()
+	.then(function() {
+/*		for(var i=0; i<currentKWs.length; i++) {
+			saveTweetsArr(i);
+		}*/
+		saveWordsArr();
+		res.json({msg: 'stopped'});
+	});
 };
 
 function splitFullTweet(str) {
@@ -190,14 +194,10 @@ function logTweet(tweet, ptweet) {
 
 function saveTweetsArr(index) {
 	Tweet.create(tweets[index], function(err, savedTweets) {
-		console.log(savedTweets.length);
-		console.log('index' + index);
-		// Add new tweets to the dataset and respective Keyword
+		// Add new tweets to the respective Keyword
 		for(var i=0; i<savedTweets.length; i++) {
-			currentDS.tweets.push(savedTweets[i]);
 			currentKWs[index].tweets.push(savedTweets[i]);
 		}
-		//currentDS.save();
 		currentKWs[index].save();
 	});
 }
@@ -219,79 +219,6 @@ function saveWordsArr() {
 		}
 	});
 }
-
-/*function saveTweet(tweet, ptweet) {
-	console.log(ptweet);
-	Tweet.create([tweet], function(err, savedTweet) {
-		// Add Tweet to current Dataset
-		currentDS.tweets.push(savedTweet[0]);
-		currentDS.save();
-		currentKW.tweets.push(savedTweet[0]);
-		currentKW.save();
-		//console.log(savedTweet);
-		for(var i=0; i<ptweet.length; i++) {
-			var loopi = i;
-			Word.findOne({'text': ptweet[loopi]}, function(err, word) {
-				console.log(word);
-				if(word) {
-					// If Word exists, add to keyword
-					console.log('word found');
-					console.log(word);
-					currentKW.words.push(word);
-					currentKW.save();
-
-					// Check if keyword exists in Word.keys
-					var foundKey = false;
-					var index;
-					for(var j=0; j<word.keys.length; j++) {
-						if(word.keys[j].keyword === currentKW) {
-							foundKey = true;
-							index = j;
-							break;
-						}
-					}
-
-					if(foundKey) {
-						// If found, add new occurance
-						var obj = {
-							sidewords: [ptweet[loopi-1], ptweet[loopi+1]]
-						};
-						word.keys[index].occ.push(obj);
-					}else {
-						// If not found, add new key with occurance
-						var obj = {
-							keyword: currentKW,
-							occ: [{
-								sidewords: [ptweet[loopi-1], ptweet[loopi+1]]
-							}]
-						};
-						word.keys.push(obj);
-					}
-
-				}else {
-					// If Word doesn't exist, create new Word
-					console.log('else');
-					console.log(ptweet[i]);
-					var newWord = {
-						text: ptweet[loopi],
-						keys: [{
-							keyword: currentKW,
-							occ: [{
-								sidewords: [ptweet[loopi-1], ptweet[loopi+1]]
-							}]
-						}]
-					};
-					Word.create([newWord], function(err, savedWord) {
-						console.log('saved word');
-						console.log(savedWord.text);
-						currentKW.words.push(savedWord[0]);
-						currentKW.save();
-					});
-				}
-			});
-		}
-	});
-}*/
 
 function handleError(res, err, msg) {
 	console.log(err);

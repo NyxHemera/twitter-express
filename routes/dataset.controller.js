@@ -39,7 +39,7 @@ exports.newDS = function(req, res) {
 			keyText += req.body.keys[i];
 		}
 	}
-	Dataset.create({keyText: keyText}, function(err, newDS) {
+	Dataset.create({keyText: keyText, running: false, hasRun: false}, function(err, newDS) {
 		console.log(newDS);
 		Keyword.create(objArr, function(err, newKeywords) {
 			for(var i=0; i<newKeywords.length; i++) {

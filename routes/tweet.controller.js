@@ -7,7 +7,7 @@ var Twit = require('twit');
 var KEYS = require('../secrets/keys');
 
 var currentDS;
-var currentKW;
+var currentKWs;
 
 var tweets = [];
 var words = [];
@@ -20,7 +20,7 @@ exports.start = function(req, res) {
 	.exec(function(err, ds) {
 		console.log(ds);
 		currentDS = ds;
-		currentKW = ds.keywords[0];
+		currentKWs = ds.keywords;
 		stream = KEYS.stream('statuses/filter', { track: ds.keyText });
 		stream.on('tweet', function(tweet) {
 			ptweet = processTweet(tweet.text);

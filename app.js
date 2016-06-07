@@ -1,5 +1,6 @@
 var express = require('express');
 var path = require('path');
+var bodyParser = require('body-parser');
 var port = process.env.PORT || 3000;
 var server = require('http').createServer(app);
 var Twit = require('twit');
@@ -23,6 +24,9 @@ mongoose.connect(uristring, function(err, res) {
     console.log('Cargo loaded: '+uristring);
   }
 });
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');

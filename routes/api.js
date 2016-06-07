@@ -18,12 +18,12 @@ router.route('/')
 router.get('/datasets', datasetCtrl.index);
 router.get('/datasets/:id', datasetCtrl.getById);
 router.put('/datasets/:id', datasetCtrl.editKeys);
-router.put('/datasets/new', datasetCtrl.newDS);
+router.post('/datasets/new', datasetCtrl.newDS);
 
 //---------------------------------------//
 //	Gathering Routes										 //
 //---------------------------------------//
-router.get('/start', tweetCtrl.start);
+router.get('/start/:id', tweetCtrl.start);
 router.get('/stop', tweetCtrl.stop);
 
 module.exports = router;

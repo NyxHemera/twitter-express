@@ -7,7 +7,7 @@ var WordSchema = new mongoose.Schema({
 		keyword: { type: ObjectId, ref: 'Keyword' },
 		occ: [{
 			sidewords: [],
-			time: Date
+			time: Number
 		}]
 	}]
 });

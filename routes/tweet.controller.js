@@ -40,7 +40,7 @@ exports.stop = function(req, res) {
 	currentDS.hasRun = true;
 	currentDS.save()
 	.then(function() {
-		console.log(words);
+		words = filterWordsArr(words);
 		saveWordsArr();
 		res.json({msg: 'stopped'});
 	});
@@ -84,7 +84,8 @@ function removeFillers(arr) {
 			arr[i].indexOf("http") != -1 ||
 			arr[i].indexOf("RT") != -1 ||
 			arr[i].indexOf("…") != -1 ||
-			arr[i].indexOf("@") != -1
+			arr[i].indexOf("@") != -1 ||
+			arr[i].indexOf("&amp;") != -1
 			) {
 			arr.splice(i--, 1);
 			continue;
@@ -142,6 +143,48 @@ function logTweet(ptweet) {
 			}
 		}
 	}
+}
+
+function getWordsAvg(arr) {
+	var sum = 0;
+	for(var i=0; i<arr.length; i++) {
+		sum += arr[i].occ;
+	}
+	return sum/arr.length;
+}
+
+function removeShortWords(arr) {
+	console.log('Before removing short words: ' + arr.length);
+	for(var i=0; i<arr.length; i++) {
+		if(arr[i].text.length <= 3) {
+			arr.splice(i--, 1);
+		}
+	}
+	console.log('After removing short words: ' + arr.length);
+	return arr;
+}
+// Could combine short and removeLowFreqWords in the future....
+function removeLowFreqWords(arr) {
+	console.log('Before removing low frequency words: ' + arr.length);
+	for(var i=0; i<arr.length; i++) {
+		if(arr[i].occ < 10) {
+			arr.splice(i--, 1);
+		}
+	}
+	console.log('After removing low frequency words: ' + arr.length);
+	return arr;
+}
+
+function filterWordsArr(arr) {
+	for(var i=0; i<arr.length; i++) {
+		console.log('Before filtering: ' + arr[i].length);
+		// Remove short words
+		arr[i] = removeShortWords(arr[i]);
+		// Remove low frequency words
+		arr[i] = removeLowFreqWords(arr[i]);
+		console.log('After filtering: ' + arr[i].length);
+	}
+	return arr;
 }
 
 function saveWordsArr() {

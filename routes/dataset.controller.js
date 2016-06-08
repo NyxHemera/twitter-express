@@ -14,12 +14,8 @@ exports.index = function(req, res) {
 exports.getById = function(req, res) {
 	Dataset.findById(req.params.id)
 	.populate('keywords')
-	.populate('tweets')
 	.exec(function(err, dataset) {
-		Dataset.populate(dataset, {path: 'keywords.words', model: 'Word'})
-		.then(function(dataset) {
-			return res.json(dataset);
-		});
+		return res.json(dataset);
 	});
 };
 

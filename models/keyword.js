@@ -3,8 +3,11 @@ var ObjectId = mongoose.Schema.Types.ObjectId;
 
 var KeywordSchema = new mongoose.Schema({
 	keyText: String,
-	words: [{ type: ObjectId, ref: 'Word' }]/*,
-	tweets: [{ type: ObjectId, ref: 'Tweet' }]*/
+	color: String,
+	words: [{
+		text: String,
+		occ: Number
+	}]
 });
 
 module.exports = mongoose.model('Keyword', KeywordSchema);

@@ -109,7 +109,17 @@ function removeFillers(arr) {
 			arr[i].indexOf("RT") != -1 ||
 			arr[i].indexOf("…") != -1 ||
 			arr[i].indexOf("@") != -1 ||
-			arr[i].indexOf("&amp;") != -1
+			arr[i].indexOf("when") != -1 ||
+			arr[i].indexOf("that") != -1 ||
+			arr[i].indexOf("then") != -1 ||
+			arr[i].indexOf("what") != -1 ||
+			arr[i].indexOf("with") != -1 ||
+			arr[i].indexOf("this") != -1 ||
+			arr[i].indexOf("your") != -1 ||
+			arr[i].indexOf("says") != -1 ||
+			arr[i].indexOf("just") != -1 ||
+			arr[i].indexOf("have") != -1 ||
+			arr[i].indexOf("from") != -1
 			) {
 			arr.splice(i--, 1);
 			continue;

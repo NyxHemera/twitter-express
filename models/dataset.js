@@ -4,6 +4,7 @@ var ObjectId = mongoose.Schema.Types.ObjectId;
 var DatasetSchema = new mongoose.Schema({
 	keywords: [{ type: ObjectId, ref: 'Keyword' }],
 	keyText: String,
+	title: String,
 	running: Boolean,
 	hasRun: Boolean
 });

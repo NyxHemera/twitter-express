@@ -3,6 +3,7 @@ var Keyword = require('../models/keyword');
 
 var Twit = require('twit');
 var KEYS = require('../secrets/keys');
+var APIKEY = require('../secrets/apikey');
 
 var currentDS;
 var currentKWs;
@@ -12,38 +13,46 @@ var words = [];
 var stream = null;
 
 exports.start = function(req, res) {
-	Dataset.findById(req.params.id)
-	.populate('keywords')
-	.exec(function(err, ds) {
-		// Set up variables
-		currentDS = ds;
-		currentKWs = ds.keywords;
-		for(var i=0; i<currentKWs.length; i++) {
-			words.push([]);
-		}
-		currentDS.running = true;
-		currentDS.save();
-		// Start Stream
-		stream = KEYS.stream('statuses/filter', { track: ds.keyText });
-		stream.on('tweet', function(tweet) {
-			ptweet = processTweet(tweet.text);
-			logTweet(ptweet);
-		});
+	if(req.query.key === APIKEY) {
+		Dataset.findById(req.params.id)
+		.populate('keywords')
+		.exec(function(err, ds) {
+			// Set up variables
+			currentDS = ds;
+			currentKWs = ds.keywords;
+			for(var i=0; i<currentKWs.length; i++) {
+				words.push([]);
+			}
+			currentDS.running = true;
+			currentDS.save();
+			// Start Stream
+			stream = KEYS.stream('statuses/filter', { track: ds.keyText });
+			stream.on('tweet', function(tweet) {
+				ptweet = processTweet(tweet.text);
+				logTweet(ptweet);
+			});
 
-		res.json({msg: 'started'});
-	});
+			res.json({msg: 'started'});
+		});
+	}else {
+		res.json({msg: 'Key Rejected'});
+	}
 };
 
 exports.stop = function(req, res) {
-	stream.stop();
-	currentDS.running = false;
-	currentDS.hasRun = true;
-	currentDS.save()
-	.then(function() {
-		words = filterWordsArr(words);
-		saveWordsArr();
-		res.json({msg: 'stopped'});
-	});
+	if(req.query.key === APIKEY) {
+		stream.stop();
+		currentDS.running = false;
+		currentDS.hasRun = true;
+		currentDS.save()
+		.then(function() {
+			words = filterWordsArr(words);
+			saveWordsArr();
+			res.json({msg: 'stopped'});
+		});
+	}else {
+		res.json({msg: 'Key Rejected'});
+	}
 };
 
 function splitFullTweet(str) {

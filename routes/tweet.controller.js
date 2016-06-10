@@ -6,7 +6,7 @@ var KEYS;
 var APIKEY;
 
 if(process.env.CK) {
-	Tweet = new Twit({
+	KEYS = new Twit({
 	  consumer_key: process.env.CK,
 	  consumer_secret: process.env.CS,
 	  access_token: process.env.AT,

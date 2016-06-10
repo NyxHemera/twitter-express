@@ -53,7 +53,7 @@ exports.newDS = function(req, res) {
 					newDS.keywords.push(newKeywords[i]);
 				}
 				newDS.save()
-				.then(function(err, DS) {
+				.then(function(DS) {
 					return res.json(DS);
 				});
 			});

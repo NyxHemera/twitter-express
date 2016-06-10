@@ -2,8 +2,21 @@ var Dataset = require('../models/dataset');
 var Keyword = require('../models/keyword');
 
 var Twit = require('twit');
-var KEYS = process.env.tweet || require('../secrets/keys');
-var APIKEY = process.env.apikey || require('../secrets/apikey');
+var KEYS;
+var APIKEY;
+
+if(process.env.CK) {
+	Tweet = new Twit({
+	  consumer_key: process.env.CK,
+	  consumer_secret: process.env.CS,
+	  access_token: process.env.AT,
+	  access_token_secret: process.env.ATS
+	});
+	APIKEY = process.env.APIKEY;
+}else {
+	var KEYS = require('../models/tweet');
+	var APIKEY = require('../secrets/apikey');
+}
 
 var currentDS;
 var currentKWs;

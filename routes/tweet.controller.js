@@ -119,7 +119,9 @@ function removeFillers(arr) {
 			arr[i].indexOf("says") != -1 ||
 			arr[i].indexOf("just") != -1 ||
 			arr[i].indexOf("have") != -1 ||
-			arr[i].indexOf("from") != -1
+			arr[i].indexOf("from") != -1 ||
+			arr[i].indexOf("some") != -1 ||
+			arr[i].indexOf("they") != -1
 			) {
 			arr.splice(i--, 1);
 			continue;

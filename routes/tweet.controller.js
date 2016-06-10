@@ -2,8 +2,8 @@ var Dataset = require('../models/dataset');
 var Keyword = require('../models/keyword');
 
 var Twit = require('twit');
-var KEYS = require('../secrets/keys');
-var APIKEY = require('../secrets/apikey');
+var KEYS = process.env.tweet || require('../secrets/keys');
+var APIKEY = process.env.apikey || require('../secrets/apikey');
 
 var currentDS;
 var currentKWs;

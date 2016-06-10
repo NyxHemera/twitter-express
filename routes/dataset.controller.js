@@ -4,6 +4,16 @@ var Word = require('../models/word');
 var Tweet = require('../models/tweet');
 var APIKEY = require('../secrets/apikey');
 
+if(process.env.CK) {
+	Tweet = new Twit({
+	  consumer_key: process.env.CK,
+	  consumer_secret: process.env.CS,
+	  access_token: process.env.AT,
+	  access_token_secret: process.env.ATS
+	});
+	APIKEY = process.env.APIKEY;
+}
+
 exports.index = function(req, res) {
 	Dataset.find()
 	.then(function(datasets) {

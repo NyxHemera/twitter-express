@@ -27,6 +27,7 @@ var stream = null;
 
 exports.start = function(req, res) {
 	if(req.query.key === APIKEY) {
+		words = [];
 		Dataset.findById(req.params.id)
 		.populate('keywords')
 		.exec(function(err, ds) {
@@ -61,6 +62,7 @@ exports.stop = function(req, res) {
 		.then(function() {
 			words = filterWordsArr(words);
 			saveWordsArr();
+			words = [];
 			res.json({msg: 'stopped'});
 		});
 	}else {
